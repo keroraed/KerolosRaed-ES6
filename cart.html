@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowMart | Cart</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <div class="brand"><span class="dot"></span> FlowMart</div>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+        <a href="cart.html" class="cart-pill">Cart <span id="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h2>Your bag</h2>
+    <div id="empty-message" class="alert">Your cart is empty.</div>
+    <div class="cart-list" id="cart-list"></div>
+    <div class="total-box" id="total-box" style="display:none;">
+      <span>Total</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <strong id="cart-total">$0</strong>
+        <button id="buy-now" class="btn btn-primary">Buy Now</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      renderCart();
+      const buyBtn = document.getElementById('buy-now');
+      buyBtn.addEventListener('click', function () {
+        localStorage.removeItem('cartItems');
+        updateCartCount();
+        window.location.href = 'success.html';
+      });
+    });
+  </script>
+</body>
+</html>

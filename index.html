@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowMart | Home</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <div class="brand"><span class="dot"></span> FlowMart</div>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <span id="user-welcome" style="display: none; margin-right: 10px; font-weight: 500;"></span>
+        <a href="#" id="logout-link" style="display: none; cursor: pointer;">Logout</a>
+        <a href="login.html" id="login-link">Login</a>
+        <a href="register.html" id="register-link">Register</a>
+        <a href="cart.html" class="cart-pill">Cart <span id="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-label="Featured slider">
+      <div id="slider-track"></div>
+      <div class="slider-controls">
+        <button id="prev-slide" aria-label="Previous slide">&#8249;</button>
+        <button id="next-slide" aria-label="Next slide">&#8250;</button>
+      </div>
+    </section>
+
+    <section class="filters" aria-label="Product filters">
+      <div class="filter-chip">
+        <span>Price</span>
+        <select id="price-filter">
+          <option value="all">All</option>
+          <option value="0-50">Under $50</option>
+          <option value="50-100">$50 - $100</option>
+          <option value="100-200">$100 - $200</option>
+          <option value="200+">$200+</option>
+        </select>
+      </div>
+      <div class="filter-chip">
+        <span>Size</span>
+        <select id="size-filter">
+          <option value="all">All</option>
+          <option value="XS">XS</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
+        </select>
+      </div>
+    </section>
+
+    <section>
+      <div class="products-grid" id="product-list"></div>
+    </section>
+  </main>
+
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/slider.js"></script>
+  <script>
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+    if (currentUser && currentUser.name) {
+      const welcomeEl = document.getElementById('user-welcome');
+      welcomeEl.textContent = `Welcome, ${currentUser.name}!`;
+      welcomeEl.style.display = 'inline';
+      document.getElementById('login-link').style.display = 'none';
+      document.getElementById('register-link').style.display = 'none';
+      document.getElementById('logout-link').style.display = 'inline';
+    }
+
+    document.getElementById('logout-link').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('currentUser');
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>
