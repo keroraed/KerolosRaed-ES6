@@ -1,0 +1,241 @@
+{
+  "info": {
+    "_postman_id": "e22a14db-c779-4605-a1d1-f3479ecf4c74",
+    "name": "FlowMart Chat Proxy API",
+    "description": "Professional Postman collection for the FlowMart backend chat proxy.\n\nBase URL: {{baseUrl}}\nEndpoint: POST /api/chat\n\nRequest body keys:\n- model (string, optional): Allowed values are gpt-4o-mini or gpt-4.1-mini. Any other value falls back to gpt-4o-mini on the server.\n- messages (array, required): Chat history in chronological order.\n  - role: user or assistant\n  - content: non-empty string\n\nResponse body keys:\n- reply (string) on success\n- error (string) on failure\n\nRequired headers:\n- Content-Type: application/json\n- Accept: application/json",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Chat - Single Turn (200)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"model\": \"{{model}}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{userMessage}}\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/chat",
+        "description": "Sends one user message and expects a valid assistant reply."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "let json;",
+              "pm.test(\"Response is valid JSON\", function () {",
+              "  json = pm.response.json();",
+              "  pm.expect(json).to.be.an('object');",
+              "});",
+              "",
+              "pm.test(\"Reply field exists and is non-empty\", function () {",
+              "  pm.expect(json).to.have.property('reply');",
+              "  pm.expect(json.reply).to.be.a('string');",
+              "  pm.expect(json.reply.trim().length).to.be.above(0);",
+              "});",
+              "",
+              "pm.collectionVariables.set('lastReply', json.reply);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat - Multi Turn History (200)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"model\": \"{{secondaryModel}}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"I want sneakers for walking under $150.\"\n    },\n    {\n      \"role\": \"assistant\",\n      \"content\": \"Sure. Do you prefer breathable mesh and neutral colors?\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Yes. Size 42 EU, and suggest two options.\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/chat",
+        "description": "Sends full conversation history to verify context-aware replies."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test(\"Reply is present\", function () {",
+              "  pm.expect(json.reply).to.be.a('string');",
+              "  pm.expect(json.reply.trim().length).to.be.above(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat - Validation Error (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"model\": \"{{model}}\",\n  \"messages\": []\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/chat",
+        "description": "Negative test: messages is required and cannot be empty."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test(\"Error field exists\", function () {",
+              "  pm.expect(json).to.have.property('error');",
+              "  pm.expect(json.error).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat - Unsupported Model Fallback (200)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"model\": \"gpt-does-not-exist\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Reply with a short confirmation sentence.\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/chat",
+        "description": "Server should fall back to default model when model is unsupported."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test(\"Reply is present after fallback\", function () {",
+              "  pm.expect(json.reply).to.be.a('string');",
+              "  pm.expect(json.reply.trim().length).to.be.above(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "model",
+      "value": "gpt-4o-mini",
+      "type": "string"
+    },
+    {
+      "key": "secondaryModel",
+      "value": "gpt-4.1-mini",
+      "type": "string"
+    },
+    {
+      "key": "userMessage",
+      "value": "I need a lightweight backpack for work and daily use.",
+      "type": "string"
+    },
+    {
+      "key": "lastReply",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

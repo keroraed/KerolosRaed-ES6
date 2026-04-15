@@ -18,6 +18,14 @@ function updateCartCount() {
 }
 
 function addToCart(productId) {
+  // Check if user is logged in
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  if (!currentUser) {
+    alert('Please login to add items to cart');
+    window.location.href = 'login.html';
+    return;
+  }
+
   const product = findProductById(productId);
   if (!product) return;
   const cart = getCart();

@@ -57,11 +57,78 @@
     <section>
       <div class="products-grid" id="product-list"></div>
     </section>
+
+    <section class="assistant-shell" aria-label="AI assistant chat">
+      <div class="assistant-head">
+        <h2>FlowMart AI Assistant</h2>
+        <p>Ask anything about products, sizing, checkout, or order flow. Replies stay in full history so you can continue the same conversation through the backend proxy.</p>
+      </div>
+
+      <div class="assistant-toolbar">
+        <div class="assistant-control">
+          <label for="chat-model">Model</label>
+          <select id="chat-model">
+            <option value="gpt-4o-mini">gpt-4o-mini</option>
+            <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+            <option value="gpt-5.4">gpt-5.4</option>
+          </select>
+        </div>
+        <button class="btn" id="chat-clear-history" type="button">Clear History</button>
+      </div>
+
+      <div id="chat-status" class="alert assistant-alert" role="status" aria-live="polite"></div>
+      <div id="chat-history" class="assistant-history" aria-live="polite"></div>
+
+      <form id="chat-form" class="assistant-form">
+        <label class="sr-only" for="chat-input">Chat prompt</label>
+        <input id="chat-image-input" type="file" accept="image/*" hidden />
+        <textarea id="chat-input" rows="3" placeholder="Type your message. Press Enter to send, Shift+Enter for a new line."></textarea>
+        <div class="assistant-upload-row">
+          <button class="btn btn-ghost" id="chat-image-pick" type="button">Upload Image</button>
+          <button class="btn" id="chat-image-remove" type="button">Remove Image</button>
+          <span id="chat-image-info" class="assistant-image-info">No image selected</span>
+        </div>
+        <div id="chat-image-preview-wrap" class="assistant-image-preview-wrap assistant-hidden">
+          <img id="chat-image-preview" class="assistant-image-preview" alt="Selected image preview" />
+        </div>
+        <div class="assistant-form-actions">
+          <button class="btn btn-primary" id="chat-send" type="submit">Send Message</button>
+        </div>
+      </form>
+    </section>
   </main>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <div class="brand"><span class="dot"></span> FlowMart</div>
+        <p>Your premium shopping destination for quality products.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="cart.html">Cart</a>
+      </div>
+      <div class="footer-section">
+        <h4>Account</h4>
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+      </div>
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <p>Email: keroraed123@gmail.com</p>
+        <p>Phone: +201023525481</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 FlowMart. All rights reserved.</p>
+    </div>
+  </footer>
 
   <script src="js/products.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/slider.js"></script>
+  <script src="js/chat.js"></script>
   <script>
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
     if (currentUser && currentUser.name) {

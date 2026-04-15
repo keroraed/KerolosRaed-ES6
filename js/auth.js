@@ -14,15 +14,57 @@ function setCurrentUser(user) {
   localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
 }
 
-function showMessage(elementId, text) {
+function showMessage(elementId, text, type = "error") {
   const el = document.getElementById(elementId);
   if (!el) return;
+  el.classList.remove("success");
   if (text) {
     el.textContent = text;
+    if (type === "success") {
+      el.classList.add("success");
+    }
     el.classList.add("show");
   } else {
     el.textContent = "";
     el.classList.remove("show");
+  }
+}
+
+function normalizeAuthMode(mode) {
+  return mode === "register" ? "register" : "login";
+}
+
+function getInitialAuthMode() {
+  const bodyDefault = document.body.dataset.authDefault;
+  if (bodyDefault === "login" || bodyDefault === "register") {
+    return bodyDefault;
+  }
+
+  const queryMode = new URLSearchParams(window.location.search).get("mode");
+  return normalizeAuthMode(queryMode);
+}
+
+function setAuthMode(mode, options = {}) {
+  const shell = document.getElementById("auth-shell");
+  if (!shell) return;
+
+  const nextMode = normalizeAuthMode(mode);
+  const shouldFocus = Boolean(options.shouldFocus);
+
+  shell.classList.toggle("is-register", nextMode === "register");
+
+  if (nextMode === "register") {
+    showMessage("login-alert", "");
+  } else {
+    showMessage("register-alert", "");
+  }
+
+  if (shouldFocus) {
+    const firstFieldId = nextMode === "register" ? "reg-name" : "login-email";
+    const firstField = document.getElementById(firstFieldId);
+    if (firstField) {
+      firstField.focus();
+    }
   }
 }
 
@@ -64,7 +106,7 @@ function handleRegister(event) {
   users.push({ name, email, password });
   saveUsers(users);
   setCurrentUser({ name, email });
-  showMessage("register-alert", "Account created! Redirecting to home...");
+  showMessage("register-alert", "Account created! Redirecting to home...", "success");
   setTimeout(() => {
     window.location.href = "index.html";
   }, 800);
@@ -94,7 +136,7 @@ function handleLogin(event) {
   }
 
   setCurrentUser({ name: user.name, email: user.email });
-  showMessage("login-alert", "Login successful. Redirecting...");
+  showMessage("login-alert", "Login successful. Redirecting...", "success");
   setTimeout(() => {
     window.location.href = "index.html";
   }, 600);
@@ -103,6 +145,8 @@ function handleLogin(event) {
 document.addEventListener("DOMContentLoaded", function () {
   const registerForm = document.getElementById("register-form");
   const loginForm = document.getElementById("login-form");
+  const modeSwitchButtons = document.querySelectorAll("[data-auth-target]");
+  const forgotPasswordLink = document.querySelector(".auth-forgot");
 
   if (registerForm) {
     registerForm.addEventListener("submit", handleRegister);
@@ -110,5 +154,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (loginForm) {
     loginForm.addEventListener("submit", handleLogin);
+  }
+
+  if (modeSwitchButtons.length) {
+    modeSwitchButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const targetMode = button.dataset.authTarget;
+        setAuthMode(targetMode, { shouldFocus: true });
+      });
+    });
+
+    setAuthMode(getInitialAuthMode(), { shouldFocus: false });
+  }
+
+  if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener("click", function (event) {
+      event.preventDefault();
+      showMessage("login-alert", "Password reset placeholder. Please contact support.", "success");
+    });
   }
 });

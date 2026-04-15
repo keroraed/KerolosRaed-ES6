@@ -6,7 +6,7 @@
   <title>FlowMart | Login</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
+<body class="auth-page" data-auth-default="login">
   <header>
     <div class="navbar">
       <div class="brand"><span class="dot"></span> FlowMart</div>
@@ -20,22 +20,115 @@
   </header>
 
   <main>
-    <div class="form-shell">
-      <h2>Welcome back</h2>
-      <div id="login-alert" class="alert"></div>
-      <form id="login-form" novalidate>
-        <div class="form-group">
-          <label for="login-email">Email</label>
-          <input id="login-email" type="email" placeholder="you@example.com" required />
+    <section class="auth-stage" aria-label="Authentication">
+      <div class="auth-shell" id="auth-shell">
+
+        <div class="auth-form-container auth-signup-container">
+          <form id="register-form" novalidate>
+            <h1 class="auth-title">Create Account</h1>
+            
+            <div class="oauth-row" aria-label="Sign up with social providers">
+              <button type="button" class="oauth-btn" aria-label="Sign in with GitHub">GH</button>
+              <button type="button" class="oauth-btn" aria-label="Sign in with CodePen">&lt;/&gt;</button>
+              <button type="button" class="oauth-btn" aria-label="Sign in with Google">G</button>
+            </div>
+            
+            <p class="auth-divider">Or sign up using E-Mail Address</p>
+            <div id="register-alert" class="alert auth-alert" role="status" aria-live="polite"></div>
+
+            <div class="form-group auth-form-group">
+              <label class="sr-only" for="reg-name">Name</label>
+              <input id="reg-name" class="auth-input" type="text" placeholder="Name" required />
+            </div>
+            <div class="form-group auth-form-group">
+              <label class="sr-only" for="reg-email">Email</label>
+              <input id="reg-email" class="auth-input" type="email" placeholder="Email Address" required />
+            </div>
+            <div class="form-group auth-form-group">
+              <label class="sr-only" for="reg-password">Password</label>
+              <input id="reg-password" class="auth-input" type="password" placeholder="Password" required />
+            </div>
+            <div class="form-group auth-form-group">
+              <label class="sr-only" for="reg-confirm">Confirm Password</label>
+              <input id="reg-confirm" class="auth-input" type="password" placeholder="Confirm Password" required />
+            </div>
+
+            <button type="submit" class="auth-btn auth-btn-primary auth-submit-btn">SIGN UP</button>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="login-password">Password</label>
-          <input id="login-password" type="password" placeholder="Password" required />
+
+        <div class="auth-form-container auth-signin-container">
+          <form id="login-form" novalidate>
+            <h1 class="auth-title">Sign in</h1>
+
+            <div class="oauth-row" aria-label="Sign in with social providers">
+              <button type="button" class="oauth-btn" aria-label="Sign in with GitHub">GH</button>
+              <button type="button" class="oauth-btn" aria-label="Sign in with CodePen">&lt;/&gt;</button>
+              <button type="button" class="oauth-btn" aria-label="Sign in with Google">G</button>
+            </div>
+
+            <p class="auth-divider">Or sign in using E-Mail Address</p>
+            <div id="login-alert" class="alert auth-alert" role="status" aria-live="polite"></div>
+
+            <div class="form-group auth-form-group">
+              <label class="sr-only" for="login-email">Email</label>
+              <input id="login-email" class="auth-input" type="email" placeholder="Email Address" required />
+            </div>
+            <div class="form-group auth-form-group">
+              <label class="sr-only" for="login-password">Password</label>
+              <input id="login-password" class="auth-input" type="password" placeholder="Password" required />
+            </div>
+
+            <a href="#" class="auth-forgot">Forgot your password?</a>
+            <button type="submit" class="auth-btn auth-btn-primary auth-submit-btn">SIGN IN</button>
+          </form>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-      </form>
-    </div>
+        
+        <div class="auth-overlay-container">
+          <div class="auth-overlay">
+            <div class="auth-overlay-panel auth-overlay-left">
+              <h2>Welcome Back!</h2>
+              <p>Sign in to continue with your account and shopping journey.</p>
+              <button type="button" class="auth-btn auth-btn-outline" data-auth-target="login">SIGN IN</button>
+            </div>
+            <div class="auth-overlay-panel auth-overlay-right">
+              <h2>Create, Account!</h2>
+              <p>Sign up if you still don't have an account ...</p>
+              <button type="button" class="auth-btn auth-btn-outline" data-auth-target="register">SIGN UP</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
   </main>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <div class="brand"><span class="dot"></span> FlowMart</div>
+        <p>Your premium shopping destination for quality products.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <a href="index.html">Home</a>
+        <a href="cart.html">Cart</a>
+      </div>
+      <div class="footer-section">
+        <h4>Account</h4>
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+      </div>
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <p>Email: keroraed123@gmail.com</p>
+        <p>Phone: +201023525481</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 FlowMart. All rights reserved.</p>
+    </div>
+  </footer>
 
   <script src="js/products.js"></script>
   <script src="js/cart.js"></script>
