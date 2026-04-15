@@ -2,12 +2,12 @@
   "info": {
     "_postman_id": "e22a14db-c779-4605-a1d1-f3479ecf4c74",
     "name": "FlowMart Chat Proxy API",
-    "description": "Professional Postman collection for the FlowMart backend chat proxy.\n\nBase URL: {{baseUrl}}\nEndpoint: POST /api/chat\n\nRequest body keys:\n- model (string, optional): Allowed values are gpt-4o-mini or gpt-4.1-mini. Any other value falls back to gpt-4o-mini on the server.\n- messages (array, required): Chat history in chronological order.\n  - role: user or assistant\n  - content: non-empty string\n\nResponse body keys:\n- reply (string) on success\n- error (string) on failure\n\nRequired headers:\n- Content-Type: application/json\n- Accept: application/json",
+    "description": "Professional Postman collection for the FlowMart backend chat proxy.\n\nBase URL: {{baseUrl}}\nEndpoint: POST /api/chat\n\nSupported request body modes:\n1) messages mode (UI-compatible)\n- model (string, optional)\n- instructions (string, optional)\n- messages (array)\n  - role: user | assistant\n  - content: string\n  - imageUrl or image_url: optional (user messages)\n\n2) direct input mode (OpenAI Responses API style)\n- model (string, optional)\n- instructions (string, optional)\n- input (array)\n  - role: user | assistant\n  - content supports input_text and input_image parts\n\nAllowed models on proxy:\n- gpt-4o-mini\n- gpt-4.1-mini\n- gpt-5.4 (may return 403 if your project has no access)\n\nResponse body keys:\n- reply (string) on success\n- error (string) on failure\n\nRequired headers:\n- Content-Type: application/json\n- Accept: application/json",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Chat - Single Turn (200)",
+      "name": "Chat - Messages Text (200)",
       "request": {
         "method": "POST",
         "header": [
@@ -24,7 +24,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"model\": \"{{model}}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{userMessage}}\"\n    }\n  ]\n}",
+          "raw": "{\n  \"model\": \"{{model}}\",\n  \"instructions\": \"{{instructions}}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{userMessage}}\"\n    }\n  ]\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -32,7 +32,7 @@
           }
         },
         "url": "{{baseUrl}}/api/chat",
-        "description": "Sends one user message and expects a valid assistant reply."
+        "description": "Sends a standard text-only message list to the proxy."
       },
       "response": [],
       "event": [
@@ -64,7 +64,7 @@
       ]
     },
     {
-      "name": "Chat - Multi Turn History (200)",
+      "name": "Chat - Messages With Image URL (200/400)",
       "request": {
         "method": "POST",
         "header": [
@@ -81,7 +81,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"model\": \"{{secondaryModel}}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"I want sneakers for walking under $150.\"\n    },\n    {\n      \"role\": \"assistant\",\n      \"content\": \"Sure. Do you prefer breathable mesh and neutral colors?\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Yes. Size 42 EU, and suggest two options.\"\n    }\n  ]\n}",
+          "raw": "{\n  \"model\": \"{{visionModel}}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"what is in this image?\",\n      \"imageUrl\": \"{{imageUrl}}\"\n    }\n  ]\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -89,7 +89,7 @@
           }
         },
         "url": "{{baseUrl}}/api/chat",
-        "description": "Sends full conversation history to verify context-aware replies."
+        "description": "Uses messages mode with imageUrl (same style your frontend sends). Note: external image hosts can return rate-limit/download errors."
       },
       "response": [],
       "event": [
@@ -98,22 +98,30 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Status code is 200\", function () {",
-              "  pm.response.to.have.status(200);",
+              "const status = pm.response.code;",
+              "pm.test(\"Status is 200 or 400\", function () {",
+              "  pm.expect([200, 400]).to.include(status);",
               "});",
               "",
               "const json = pm.response.json();",
-              "pm.test(\"Reply is present\", function () {",
-              "  pm.expect(json.reply).to.be.a('string');",
-              "  pm.expect(json.reply.trim().length).to.be.above(0);",
-              "});"
+              "if (status === 200) {",
+              "  pm.test(\"Reply exists on success\", function () {",
+              "    pm.expect(json.reply).to.be.a('string');",
+              "    pm.expect(json.reply.trim().length).to.be.above(0);",
+              "  });",
+              "} else {",
+              "  pm.test(\"Error exists on download failure\", function () {",
+              "    pm.expect(json.error).to.be.a('string');",
+              "    pm.expect(json.error.trim().length).to.be.above(0);",
+              "  });",
+              "}"
             ]
           }
         }
       ]
     },
     {
-      "name": "Chat - Validation Error (400)",
+      "name": "Chat - Direct Responses Input (200/400)",
       "request": {
         "method": "POST",
         "header": [
@@ -130,7 +138,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"model\": \"{{model}}\",\n  \"messages\": []\n}",
+          "raw": "{\n  \"model\": \"{{visionModel}}\",\n  \"instructions\": \"{{instructions}}\",\n  \"input\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"input_text\",\n          \"text\": \"what is in this image?\"\n        },\n        {\n          \"type\": \"input_image\",\n          \"image_url\": \"{{imageUrl}}\"\n        }\n      ]\n    }\n  ]\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -138,7 +146,64 @@
           }
         },
         "url": "{{baseUrl}}/api/chat",
-        "description": "Negative test: messages is required and cannot be empty."
+        "description": "Uses raw OpenAI Responses API input shape through your proxy."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const status = pm.response.code;",
+              "pm.test(\"Status is 200 or 400\", function () {",
+              "  pm.expect([200, 400]).to.include(status);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "if (status === 200) {",
+              "  pm.test(\"Reply exists on success\", function () {",
+              "    pm.expect(json.reply).to.be.a('string');",
+              "    pm.expect(json.reply.trim().length).to.be.above(0);",
+              "  });",
+              "} else {",
+              "  pm.test(\"Error exists on download failure\", function () {",
+              "    pm.expect(json.error).to.be.a('string');",
+              "    pm.expect(json.error.trim().length).to.be.above(0);",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat - Validation Error Empty Payload (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"model\": \"{{model}}\",\n  \"messages\": [],\n  \"input\": []\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/chat",
+        "description": "Negative test: proxy requires at least one message or one input item."
       },
       "response": [],
       "event": [
@@ -152,9 +217,10 @@
               "});",
               "",
               "const json = pm.response.json();",
-              "pm.test(\"Error field exists\", function () {",
+              "pm.test(\"Validation error text is returned\", function () {",
               "  pm.expect(json).to.have.property('error');",
               "  pm.expect(json.error).to.be.a('string');",
+              "  pm.expect(json.error).to.include('At least one chat message or input item is required');",
               "});"
             ]
           }
@@ -209,6 +275,63 @@
           }
         }
       ]
+    },
+    {
+      "name": "Chat - gpt-5.4 Access Check (200/403)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"model\": \"{{advancedModel}}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Reply with OK.\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/chat",
+        "description": "Checks whether your project can access gpt-5.4. 403 means model access is not enabled for your account/project."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const status = pm.response.code;",
+              "pm.test(\"Status is 200 or 403\", function () {",
+              "  pm.expect([200, 403]).to.include(status);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "if (status === 200) {",
+              "  pm.test(\"Reply exists when access is enabled\", function () {",
+              "    pm.expect(json.reply).to.be.a('string');",
+              "    pm.expect(json.reply.trim().length).to.be.above(0);",
+              "  });",
+              "} else {",
+              "  pm.test(\"Error exists when model access is denied\", function () {",
+              "    pm.expect(json.error).to.be.a('string');",
+              "    pm.expect(json.error.toLowerCase()).to.include('access');",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
     }
   ],
   "variable": [
@@ -223,13 +346,33 @@
       "type": "string"
     },
     {
+      "key": "visionModel",
+      "value": "gpt-4o-mini",
+      "type": "string"
+    },
+    {
       "key": "secondaryModel",
       "value": "gpt-4.1-mini",
       "type": "string"
     },
     {
+      "key": "advancedModel",
+      "value": "gpt-5.4",
+      "type": "string"
+    },
+    {
+      "key": "instructions",
+      "value": "You are FlowMart's shopping assistant. Keep answers practical and short.",
+      "type": "string"
+    },
+    {
       "key": "userMessage",
       "value": "I need a lightweight backpack for work and daily use.",
+      "type": "string"
+    },
+    {
+      "key": "imageUrl",
+      "value": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80",
       "type": "string"
     },
     {
